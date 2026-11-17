@@ -5,129 +5,269 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>دفتر أفكاري</title>
 <style>
+:root{--bg:#f4f1ea;--card:#fff;--fg:#222;--mut:#888;--bd:#d9d2bf;--pri:#2d5a47;--sec:#e4ded0;--fs:17px}
+body.dark{--bg:#17191c;--card:#23262b;--fg:#eee;--mut:#9aa;--bd:#3a3f46;--pri:#3f8f6f;--sec:#33373d}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:#f4f1ea;color:#222;padding:16px;max-width:720px;margin-inline:auto}
-h1{font-size:22px;margin:0 0 12px}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-button{font:inherit;border:0;border-radius:12px;padding:12px 16px;background:#2d5a47;color:#fff;cursor:pointer}
-button.sec{background:#e4ded0;color:#222}
+body{margin:0;font-family:system-ui,"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--fg);padding:14px;max-width:760px;margin-inline:auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+h1{font-size:21px;margin:0}
+button,select{font:inherit;border:0;border-radius:12px;padding:10px 14px;background:var(--pri);color:#fff;cursor:pointer}
+button.sec,select{background:var(--sec);color:var(--fg)}
 button.rec{background:#c0392b}
-#mic{flex:1;font-size:18px;padding:16px}
-textarea{width:100%;min-height:220px;font:inherit;font-size:17px;line-height:1.8;padding:12px;border:1px solid #cfc8b6;border-radius:12px;background:#fff;resize:vertical}
-#interim{color:#888;min-height:24px;font-size:15px}
-#status{font-size:14px;color:#555}
-.idea{background:#fff;border-radius:12px;padding:12px;margin:10px 0;border:1px solid #e0d9c7}
-.idea small{color:#888;display:block;margin-bottom:6px}
-.idea p{margin:0 0 8px;white-space:pre-wrap;line-height:1.7}
-.idea button{padding:6px 12px;font-size:14px}
+button.sm{padding:6px 10px;font-size:14px}
+input[type=text],textarea{width:100%;font:inherit;font-size:var(--fs);padding:11px;border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--fg)}
+textarea{min-height:210px;line-height:1.8;resize:vertical;margin-top:8px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:6px 0;align-items:center}
+.tab{white-space:nowrap;background:var(--sec);color:var(--fg);padding:8px 14px;border-radius:20px}
+.tab.on{background:var(--pri);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+#mic{flex:1;font-size:18px;padding:15px}
+#interim{color:var(--mut);min-height:22px;font-size:15px}
+#status{font-size:14px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin:10px 0}
+.card h3{margin:0 0 4px;font-size:17px}
+.card small{color:var(--mut)}
+.card p{margin:8px 0;white-space:pre-wrap;line-height:1.7;font-size:var(--fs)}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal.on{display:flex}
+.box{background:var(--card);border-radius:16px;padding:16px;width:100%;max-width:420px;max-height:90vh;overflow:auto}
+.box h2{margin:0 0 10px;font-size:18px}
+label{display:block;margin:12px 0 4px;font-size:15px}
+.sp{height:6px}
 </style>
 </head>
 <body>
-<h1>🎙️ دفتر أفكاري</h1>
-<div class="row">
-  <button id="mic">ابدأ التسجيل</button>
+<header>
+  <h1>🎙️ دفتر أفكاري</h1>
+  <button class="sec sm" id="openSet">⚙️ إعدادات</button>
+</header>
+
+<div class="tabs" id="tabs"></div>
+<div class="row" id="secTools">
+  <button class="sec sm" id="renSec">✏️ تسمية القسم</button>
+  <button class="sec sm" id="delSec">🗑️ حذف القسم</button>
 </div>
+
+<input type="text" id="title" placeholder="عنوان الفكرة (اختياري)">
+<div class="row"><button id="mic">ابدأ التسجيل</button></div>
 <div id="status">جاهز</div>
-<textarea id="text" placeholder="الكلام هيتكتب هنا... تقدر تعدّل عليه بإيدك"></textarea>
+<textarea id="text" placeholder="الكلام هيتكتب هنا... وتقدر تعدّل بإيدك"></textarea>
 <div id="interim"></div>
 <div class="row">
-  <button id="save">💾 احفظ الفكرة</button>
-  <button id="copy" class="sec">نسخ</button>
-  <button id="share" class="sec">مشاركة</button>
-  <button id="dl" class="sec">تنزيل txt</button>
-  <button id="clear" class="sec">مسح</button>
+  <button id="save">💾 احفظ</button>
+  <button class="sec" id="copy">نسخ</button>
+  <button class="sec" id="dl">تنزيل txt</button>
+  <button class="sec" id="clear">فكرة جديدة</button>
 </div>
-<h2 style="font-size:18px">الأفكار المحفوظة</h2>
+<div id="editing" style="color:var(--mut);font-size:14px"></div>
+
+<h2 style="font-size:18px" id="listTitle"></h2>
 <div id="list"></div>
+
+<!-- Modal عام -->
+<div class="modal" id="modal"><div class="box" id="box"></div></div>
 
 <script>
 const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+/* ---------- البيانات ---------- */
+const DEF={sections:[{id:'s1',name:'عام'}],ideas:[],cur:'s1',
+  settings:{lang:'ar-EG',font:17,dark:false,newline:false,autoRestart:true}};
+let D;
+try{D=JSON.parse(localStorage.getItem('afkar2')||'null')}catch(_){D=null}
+if(!D){ // ترحيل من النسخة القديمة لو موجودة
+  D=JSON.parse(JSON.stringify(DEF));
+  try{const old=JSON.parse(localStorage.getItem('ideas')||'[]');
+    old.forEach(o=>D.ideas.push({id:uid(),sec:'s1',title:'',text:o.x,t:o.t}))}catch(_){}
+}
+function persist(){try{localStorage.setItem('afkar2',JSON.stringify(D))}catch(_){}}
+let editingId=null;
+
+/* ---------- نافذة حوار ---------- */
+function dialog(html,setup){
+  $('box').innerHTML=html;$('modal').classList.add('on');setup&&setup($('box'));
+}
+function closeDlg(){$('modal').classList.remove('on')}
+$('modal').onclick=e=>{if(e.target===$('modal'))closeDlg()};
+function askText(title,val,cb){
+  dialog(`<h2>${title}</h2><input type="text" id="dv"><div class="row"><button id="ok">تم</button><button class="sec" id="no">إلغاء</button></div>`,b=>{
+    const i=b.querySelector('#dv');i.value=val||'';setTimeout(()=>i.focus(),50);
+    b.querySelector('#ok').onclick=()=>{const v=i.value.trim();if(v){closeDlg();cb(v)}};
+    b.querySelector('#no').onclick=closeDlg;
+  });
+}
+function confirmDlg(msg,cb){
+  dialog(`<h2>${msg}</h2><div class="row"><button id="ok">تأكيد</button><button class="sec" id="no">إلغاء</button></div>`,b=>{
+    b.querySelector('#ok').onclick=()=>{closeDlg();cb()};b.querySelector('#no').onclick=closeDlg;
+  });
+}
+
+/* ---------- الأقسام ---------- */
+function renderTabs(){
+  const t=$('tabs');t.innerHTML='';
+  D.sections.forEach(s=>{
+    const b=document.createElement('button');b.className='tab'+(s.id===D.cur?' on':'');
+    b.textContent=s.name;b.onclick=()=>{D.cur=s.id;persist();renderAll()};t.append(b);
+  });
+  const a=document.createElement('button');a.className='tab';a.textContent='＋ قسم';
+  a.onclick=()=>askText('اسم القسم الجديد','',v=>{const id=uid();D.sections.push({id,name:v});D.cur=id;persist();renderAll()});
+  t.append(a);
+}
+const curSec=()=>D.sections.find(s=>s.id===D.cur)||D.sections[0];
+$('renSec').onclick=()=>askText('اسم القسم',curSec().name,v=>{curSec().name=v;persist();renderAll()});
+$('delSec').onclick=()=>{
+  if(D.sections.length<2){dialog('<h2>لازم يفضل قسم واحد على الأقل</h2><button id="no">تمام</button>',b=>b.querySelector('#no').onclick=closeDlg);return}
+  const s=curSec(),n=D.ideas.filter(i=>i.sec===s.id).length;
+  confirmDlg(`حذف قسم "${s.name}"${n?` و ${n} فكرة جواه`:''}؟`,()=>{
+    D.ideas=D.ideas.filter(i=>i.sec!==s.id);
+    D.sections=D.sections.filter(x=>x.id!==s.id);D.cur=D.sections[0].id;persist();renderAll();
+  });
+};
+
+/* ---------- الأفكار ---------- */
+const autoTitle=i=>i.title||(i.text.trim().split(/\s+/).slice(0,6).join(' ')||'بدون عنوان');
+const fname=i=>autoTitle(i).replace(/[\\/:*?"<>|]/g,'').slice(0,60).trim()||'فكرة';
+function download(name,content){
+  const b=new Blob([content],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+async function copyText(v){
+  try{await navigator.clipboard.writeText(v)}catch(_){const t=$('text');const o=t.value;t.value=v;t.select();document.execCommand('copy');t.value=o}
+  setStatus('اتنسخ ✅');
+}
+function renderList(){
+  const l=$('list');l.innerHTML='';
+  $('listTitle').textContent='أفكار قسم: '+curSec().name;
+  const a=D.ideas.filter(i=>i.sec===D.cur).sort((x,y)=>y.t-x.t);
+  if(!a.length){l.innerHTML='<div style="color:var(--mut)">لسه مفيش أفكار في القسم ده.</div>';return}
+  a.forEach(i=>{
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML='<h3></h3><small></small><p></p><div class="row" style="margin:0"></div>';
+    d.querySelector('h3').textContent=autoTitle(i);
+    d.querySelector('small').textContent=new Date(i.t).toLocaleString('ar-EG');
+    d.querySelector('p').textContent=i.text;
+    const r=d.querySelector('.row');
+    const mk=(t,f)=>{const b=document.createElement('button');b.className='sec sm';b.textContent=t;b.onclick=f;r.append(b)};
+    mk('فتح وتعديل',()=>{editingId=i.id;$('title').value=i.title;$('text').value=i.text;updEditing();scrollTo(0,0)});
+    mk('تغيير العنوان',()=>askText('عنوان الفكرة',i.title,v=>{i.title=v;persist();renderList()}));
+    mk('نقل لقسم',()=>{
+      const opts=D.sections.map(s=>`<option value="${s.id}"${s.id===i.sec?' selected':''}>${s.name.replace(/</g,'&lt;')}</option>`).join('');
+      dialog(`<h2>نقل الفكرة إلى</h2><select id="mv" style="width:100%">${opts}</select><div class="row"><button id="ok">نقل</button><button class="sec" id="no">إلغاء</button></div>`,b=>{
+        b.querySelector('#ok').onclick=()=>{i.sec=b.querySelector('#mv').value;persist();closeDlg();renderAll()};
+        b.querySelector('#no').onclick=closeDlg;
+      });
+    });
+    mk('نسخ',()=>copyText(i.text));
+    mk('تنزيل',()=>download(fname(i)+'.txt',autoTitle(i)+'\n\n'+i.text));
+    mk('حذف',()=>confirmDlg('حذف الفكرة؟',()=>{D.ideas=D.ideas.filter(x=>x!==i);if(editingId===i.id)newIdea();persist();renderList()}));
+    l.append(d);
+  });
+}
+function updEditing(){$('editing').textContent=editingId?'✏️ بتعدّل فكرة محفوظة — "احفظ" هيحدّثها':''}
+function newIdea(){editingId=null;$('title').value='';$('text').value='';$('interim').textContent='';updEditing()}
+$('clear').onclick=newIdea;
+$('save').onclick=()=>{
+  const text=$('text').value.trim();if(!text)return;
+  const title=$('title').value.trim();
+  if(editingId){const i=D.ideas.find(x=>x.id===editingId);if(i){i.text=text;i.title=title}}
+  else D.ideas.push({id:uid(),sec:D.cur,title,text,t:Date.now()});
+  persist();newIdea();renderList();setStatus('اتحفظت ✅');
+};
+$('copy').onclick=()=>copyText($('text').value);
+$('dl').onclick=()=>{
+  const i={title:$('title').value.trim(),text:$('text').value};
+  if(!i.text.trim())return;
+  dialog(`<h2>اسم الملف</h2><input type="text" id="dv"><div class="row"><button id="ok">تنزيل</button><button class="sec" id="no">إلغاء</button></div>`,b=>{
+    const inp=b.querySelector('#dv');inp.value=fname(i);
+    b.querySelector('#ok').onclick=()=>{const n=inp.value.trim().replace(/[\\/:*?"<>|]/g,'')||'فكرة';closeDlg();download(n+'.txt',(i.title?i.title+'\n\n':'')+i.text)};
+    b.querySelector('#no').onclick=closeDlg;
+  });
+};
+
+/* ---------- التسجيل الصوتي ---------- */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 let rec=null,running=false;
-const text=$('text');
-
 function setStatus(s){$('status').textContent=s}
-
-if(!SR){setStatus('المتصفح ده مش بيدعم التعرف على الصوت. افتحها من Chrome.');$('mic').disabled=true}
-
+if(!SR){setStatus('المتصفح ده مش بيدعم التعرف على الصوت. استخدم Chrome.');$('mic').disabled=true}
 function build(){
-  rec=new SR();
-  rec.lang='ar-EG';
-  rec.continuous=false;      // أثبت على أندرويد، وبنعيد التشغيل تلقائي
-  rec.interimResults=true;
+  rec=new SR();rec.lang=D.settings.lang;rec.continuous=false;rec.interimResults=true;
   rec.onresult=e=>{
-    let interim='';
+    let interim='';const t=$('text');
     for(let i=e.resultIndex;i<e.results.length;i++){
       const r=e.results[i];
       if(r.isFinal){
-        const t=r[0].transcript.trim();
-        if(t){text.value+=(text.value&&!/\s$/.test(text.value)?' ':'')+t}
+        const s=r[0].transcript.trim();
+        if(s){const sep=!t.value?'':(D.settings.newline?'\n':(/\s$/.test(t.value)?'':' '));t.value+=sep+s}
       }else interim+=r[0].transcript;
     }
     $('interim').textContent=interim;
   };
   rec.onerror=e=>{
-    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-      running=false;setStatus('الميكروفون مش مسموح. اسمح له من إعدادات الموقع في Chrome.');ui();
-    }
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){running=false;setStatus('الميكروفون مش مسموح. فعّله من القفل 🔒 جنب الرابط.');ui()}
+    else if(e.error==='network'){setStatus('مفيش اتصال بالنت للتعرف على الصوت.')}
   };
   rec.onend=()=>{
     $('interim').textContent='';
-    if(running){try{rec.start()}catch(_){setTimeout(()=>{try{rec.start()}catch(_){}},300)}}
-    else ui();
+    if(running&&D.settings.autoRestart){try{rec.start()}catch(_){setTimeout(()=>{try{rec.start()}catch(_){}},300)}}
+    else{running=false;ui()}
   };
 }
 function ui(){
   $('mic').textContent=running?'⏹ إيقاف':'ابدأ التسجيل';
   $('mic').classList.toggle('rec',running);
   if(running)setStatus('بسمعك... اتكلم براحتك');
-  else if(!/مش/.test($('status').textContent))setStatus('متوقف');
 }
 $('mic').onclick=()=>{
-  if(!rec)build();
-  if(running){running=false;rec.stop();ui();return}
-  running=true;ui();
+  if(running){running=false;rec&&rec.stop();setStatus('متوقف');ui();return}
+  build();running=true;ui();
   try{rec.start()}catch(_){}
 };
 
-// الأفكار المحفوظة
-function load(){try{return JSON.parse(localStorage.getItem('ideas')||'[]')}catch(_){return[]}}
-function store(a){try{localStorage.setItem('ideas',JSON.stringify(a))}catch(_){}}
-function render(){
-  const a=load();const l=$('list');l.innerHTML='';
-  if(!a.length){l.textContent='لسه مفيش أفكار محفوظة.';return}
-  a.forEach((it,i)=>{
-    const d=document.createElement('div');d.className='idea';
-    const s=document.createElement('small');s.textContent=new Date(it.t).toLocaleString('ar-EG');
-    const p=document.createElement('p');p.textContent=it.x;
-    const e=document.createElement('button');e.className='sec';e.textContent='تعديل';
-    e.onclick=()=>{text.value=it.x;scrollTo(0,0)};
-    const c=document.createElement('button');c.className='sec';c.textContent='نسخ';
-    c.onclick=()=>copyText(it.x);
-    const x=document.createElement('button');x.className='sec';x.textContent='حذف';
-    x.onclick=()=>{const b=load();b.splice(i,1);store(b);render()};
-    d.append(s,p,e,' ',c,' ',x);l.append(d);
+/* ---------- الإعدادات ---------- */
+function applySettings(){
+  document.body.classList.toggle('dark',D.settings.dark);
+  document.documentElement.style.setProperty('--fs',D.settings.font+'px');
+}
+$('openSet').onclick=()=>{
+  const s=D.settings;
+  dialog(`<h2>⚙️ الإعدادات</h2>
+  <label>لغة التعرف على الصوت</label>
+  <select id="lang" style="width:100%">
+    <option value="ar-EG">عربي (مصر)</option><option value="ar-SA">عربي (السعودية)</option>
+    <option value="ar-AE">عربي (الإمارات)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option>
+  </select>
+  <label>حجم الخط: <span id="fv"></span></label>
+  <input type="range" id="font" min="14" max="26" style="width:100%">
+  <label><input type="checkbox" id="dark"> الوضع الليلي</label>
+  <label><input type="checkbox" id="nl"> سطر جديد بعد كل جملة</label>
+  <label><input type="checkbox" id="ar"> إعادة التشغيل تلقائياً لو الميكروفون وقف</label>
+  <div class="sp"></div>
+  <label>نسخة احتياطية</label>
+  <div class="row"><button class="sec sm" id="exp">تصدير كل الأفكار</button><button class="sec sm" id="imp">استيراد</button></div>
+  <input type="file" id="file" accept=".json" style="display:none">
+  <div class="row"><button id="ok">تم</button></div>`,b=>{
+    b.querySelector('#lang').value=s.lang;b.querySelector('#font').value=s.font;b.querySelector('#fv').textContent=s.font;
+    b.querySelector('#dark').checked=s.dark;b.querySelector('#nl').checked=s.newline;b.querySelector('#ar').checked=s.autoRestart;
+    b.querySelector('#font').oninput=e=>{b.querySelector('#fv').textContent=e.target.value;s.font=+e.target.value;applySettings()};
+    b.querySelector('#dark').onchange=e=>{s.dark=e.target.checked;applySettings()};
+    b.querySelector('#nl').onchange=e=>s.newline=e.target.checked;
+    b.querySelector('#ar').onchange=e=>s.autoRestart=e.target.checked;
+    b.querySelector('#lang').onchange=e=>{s.lang=e.target.value;if(rec)rec.lang=s.lang};
+    b.querySelector('#exp').onclick=()=>download('afkar-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(D));
+    b.querySelector('#imp').onclick=()=>b.querySelector('#file').click();
+    b.querySelector('#file').onchange=async e=>{
+      try{const j=JSON.parse(await e.target.files[0].text());
+        if(!j.sections||!j.ideas)throw 0;D=j;D.settings=Object.assign({},DEF.settings,D.settings);
+        persist();applySettings();closeDlg();newIdea();renderAll();setStatus('اتستورد ✅')}
+      catch(_){alert('الملف مش صالح')}
+    };
+    b.querySelector('#ok').onclick=()=>{persist();closeDlg()};
   });
-}
-$('save').onclick=()=>{
-  const v=text.value.trim();if(!v)return;
-  const a=load();a.unshift({t:Date.now(),x:v});store(a);text.value='';render();setStatus('اتحفظت ✅');
 };
-async function copyText(v){
-  try{await navigator.clipboard.writeText(v);setStatus('اتنسخ ✅')}
-  catch(_){text.select();document.execCommand('copy');setStatus('اتنسخ ✅')}
-}
-$('copy').onclick=()=>copyText(text.value);
-$('share').onclick=async()=>{
-  try{await navigator.share({text:text.value})}catch(_){copyText(text.value)}
-};
-$('dl').onclick=()=>{
-  const b=new Blob([text.value],{type:'text/plain;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download='فكرة-'+new Date().toISOString().slice(0,10)+'.txt';a.click();
-};
-$('clear').onclick=()=>{text.value='';$('interim').textContent=''};
-render();
+
+function renderAll(){renderTabs();renderList()}
+applySettings();renderAll();
 </script>
 </body>
 </html>
